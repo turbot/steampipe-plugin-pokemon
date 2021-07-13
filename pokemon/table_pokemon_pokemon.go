@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	//"github.com/turbot/go-kit/types"
+	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -22,8 +22,9 @@ func tablePokemonPokemon(ctx context.Context) *plugin.Table {
 			Hydrate: pokemonList,
 		},
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AnyColumn([]string{"id", "name"}),
-			Hydrate:    getPokemon,
+			KeyColumns:        plugin.AnyColumn([]string{"id", "name"}),
+			Hydrate:           getPokemon,
+			ShouldIgnoreError: isNotFoundError([]string{"invalid character 'N' looking for beginning of value"}),
 		},
 		Columns: []*plugin.Column{
 			{
@@ -157,10 +158,12 @@ func pokemonList(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 			d.StreamListItem(ctx, pokemon)
 		}
 
+		// No next URL returned
 		if len(l.Next) == 0 {
 			break
 		}
 
+		// Get the next offset number from the URL, e.g., https://pokeapi.co/api/v2/pokemon/?offset=20&limit=20
 		u, err := url.Parse(l.Next)
 		logger.Warn("URL", u)
 		if err != nil {
@@ -178,7 +181,6 @@ func pokemonList(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		}
 
 		offset = newOffset
-		logger.Warn("Final offset", offset)
 	}
 
 	return nil, nil
@@ -189,28 +191,43 @@ func pokemonList(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 func getPokemon(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	logger := plugin.Logger(ctx)
 
-	var name string
-	//var id string
+	var name, idStr, nameOrId string
+	var id int64
 
-	/*
-		if h.Item != nil {
-			data := h.Item.(Pokemon)
-			name = types.SafeString(data.Name)
-		} else {
-			name = d.KeyColumnQuals["name"].GetStringValue()
-			id = d.KeyColumnQuals["id"].GetStringValue()
-		}
-	*/
+	if h.Item != nil {
+		//data := h.Item.(Result)
+		//logger.Warn("Data", data)
 
-	name = d.KeyColumnQuals["name"].GetStringValue()
-	//id = d.KeyColumnQuals["id"].GetStringValue()
+		//name = types.SafeString(data)
+		//id = types.IntToString(data.ID)
+	} else {
+		name = d.KeyColumnQuals["name"].GetStringValue()
+		id = d.KeyColumnQuals["id"].GetInt64Value()
+	}
 
 	logger.Warn("Name", name)
+	logger.Warn("ID", id)
 
-	l, err := pokeapi.Pokemon(name)
+	//idStr, err = strconv.Atoi(id)
+	if id > 0 {
+		idStr = types.ToString(id)
+	}
+
+	logger.Warn("New ID:", idStr)
+
+	if len(idStr) > 0 {
+		nameOrId = idStr
+	} else {
+		nameOrId = name
+	}
+
+	logger.Warn("Name or ID:", nameOrId)
+
+	l, err := pokeapi.Pokemon(nameOrId)
 	if err != nil {
 		plugin.Logger(ctx).Error("pokemon_pokemon.pokemonGet", "query_error", err)
 		return nil, err
 	}
+
 	return l, nil
 }
