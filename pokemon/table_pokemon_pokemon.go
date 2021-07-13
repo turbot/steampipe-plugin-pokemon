@@ -2,10 +2,11 @@ package pokemon
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/mtslzr/pokeapi-go"
 
-	"github.com/turbot/go-kit/types"
+	//"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -19,8 +20,10 @@ func tablePokemonPokemon(ctx context.Context) *plugin.Table {
 			Hydrate: listPokemon,
 		},
 		Get: &plugin.GetConfig{
-			KeyColumns: plugin.AnyColumn([]string{"id", "name"}),
-			Hydrate:    getPokemon,
+			KeyColumns: plugin.AnyColumn([]string{"name"}),
+			// TODO: Add support for 'id' key column
+			//KeyColumns: plugin.AnyColumn([]string{"id", "name"}),
+			Hydrate: getPokemon,
 			// Bad error message is a result of https://github.com/mtslzr/pokeapi-go/issues/29
 			ShouldIgnoreError: isNotFoundError([]string{"invalid character 'N' looking for beginning of value"}),
 		},
@@ -174,48 +177,30 @@ func listPokemon(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	return nil, nil
 }
 
-//// HYDRATE FUNCTIONS
-
 func getPokemon(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	logger := plugin.Logger(ctx)
 	logger.Trace("getPokemon")
 
-	var name, idStr, nameOrId string
-	var id int64
+	var name string
 
 	if h.Item != nil {
-		//data := h.Item.(Result)
-		//logger.Warn("Data", data)
-
-		//name = types.SafeString(data)
-		//id = types.IntToString(data.ID)
+		data := h.Item.(pokeapi.Result).Name
+		name = types.SafeString(data)
 	} else {
 		name = d.KeyColumnQuals["name"].GetStringValue()
-		id = d.KeyColumnQuals["id"].GetInt64Value()
 	}
+
+	logger.Warn("Item type", reflect.TypeOf(h.Item))
+	//name = d.KeyColumnQuals["name"].GetStringValue()
 
 	logger.Warn("Name", name)
-	logger.Warn("ID", id)
 
-	if id > 0 {
-		idStr = types.ToString(id)
-	}
+	pokemon, err := pokeapi.Pokemon(name)
 
-	logger.Warn("New ID:", idStr)
-
-	if len(idStr) > 0 {
-		nameOrId = idStr
-	} else {
-		nameOrId = name
-	}
-
-	logger.Warn("Name or ID:", nameOrId)
-
-	l, err := pokeapi.Pokemon(nameOrId)
 	if err != nil {
 		plugin.Logger(ctx).Error("pokemon_pokemon.pokemonGet", "query_error", err)
 		return nil, err
 	}
 
-	return l, nil
+	return pokemon, nil
 }
