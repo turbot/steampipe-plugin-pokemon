@@ -2,4 +2,5 @@
 
 _What's new?_
 
-- Initial release with tables
+- Initial release with tables:
+  - pokemon_pokemon
