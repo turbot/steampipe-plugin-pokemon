@@ -5,9 +5,6 @@ import (
 
 	"github.com/mtslzr/pokeapi-go"
 
-	"net/url"
-	"strconv"
-
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -19,11 +16,12 @@ func tablePokemonPokemon(ctx context.Context) *plugin.Table {
 		Name:        "pokemon_pokemon",
 		Description: "Pokémon are the creatures that inhabit the world of the Pokémon games.",
 		List: &plugin.ListConfig{
-			Hydrate: pokemonList,
+			Hydrate: listPokemon,
 		},
 		Get: &plugin.GetConfig{
-			KeyColumns:        plugin.AnyColumn([]string{"id", "name"}),
-			Hydrate:           getPokemon,
+			KeyColumns: plugin.AnyColumn([]string{"id", "name"}),
+			Hydrate:    getPokemon,
+			// Bad error message is a result of https://github.com/mtslzr/pokeapi-go/issues/29
 			ShouldIgnoreError: isNotFoundError([]string{"invalid character 'N' looking for beginning of value"}),
 		},
 		Columns: []*plugin.Column{
@@ -140,47 +138,37 @@ func tablePokemonPokemon(ctx context.Context) *plugin.Table {
 	}
 }
 
-func pokemonList(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	offset := 0
-	newOffset := 0
-
+func listPokemon(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	logger := plugin.Logger(ctx)
+	logger.Trace("listPokemon")
+
+	offset := 0
 
 	for true {
-		l, err := pokeapi.Resource("pokemon", offset)
+		resources, err := pokeapi.Resource("pokemon", offset)
 
 		if err != nil {
-			plugin.Logger(ctx).Error("pokemon_pokemon.pokemonList", "query_error", err)
+			plugin.Logger(ctx).Error("pokemon_pokemon.listPokemon", "query_error", err)
 			return nil, err
 		}
 
-		for _, pokemon := range l.Results {
+		for _, pokemon := range resources.Results {
 			d.StreamListItem(ctx, pokemon)
 		}
 
 		// No next URL returned
-		if len(l.Next) == 0 {
+		if len(resources.Next) == 0 {
 			break
 		}
 
-		// Get the next offset number from the URL, e.g., https://pokeapi.co/api/v2/pokemon/?offset=20&limit=20
-		u, err := url.Parse(l.Next)
-		logger.Warn("URL", u)
+		urlOffset, err := extractUrlOffset(resources.Next)
 		if err != nil {
-			plugin.Logger(ctx).Error("pokemon_pokemon.pokemonList", "url_parse_error", err)
+			plugin.Logger(ctx).Error("pokemon_pokemon.listPokemon", "extract_url_offset_error", err)
 			return nil, err
 		}
 
-		m, _ := url.ParseQuery(u.RawQuery)
-		logger.Warn("Raw query", m)
-		newOffset, err = strconv.Atoi(m["offset"][0])
-		logger.Warn("New offset", newOffset)
-		if err != nil {
-			plugin.Logger(ctx).Error("pokemon_pokemon.pokemonList", "str_conversion_error", err)
-			return nil, err
-		}
-
-		offset = newOffset
+		// Set next offset
+		offset = urlOffset
 	}
 
 	return nil, nil
@@ -190,6 +178,7 @@ func pokemonList(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 
 func getPokemon(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	logger := plugin.Logger(ctx)
+	logger.Trace("getPokemon")
 
 	var name, idStr, nameOrId string
 	var id int64
@@ -208,7 +197,6 @@ func getPokemon(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	logger.Warn("Name", name)
 	logger.Warn("ID", id)
 
-	//idStr, err = strconv.Atoi(id)
 	if id > 0 {
 		idStr = types.ToString(id)
 	}
