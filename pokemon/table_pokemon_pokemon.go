@@ -2,11 +2,10 @@ package pokemon
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/mtslzr/pokeapi-go"
+	"github.com/mtslzr/pokeapi-go/structs"
 
-	//"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
@@ -28,12 +27,6 @@ func tablePokemonPokemon(ctx context.Context) *plugin.Table {
 			ShouldIgnoreError: isNotFoundError([]string{"invalid character 'N' looking for beginning of value"}),
 		},
 		Columns: []*plugin.Column{
-			{
-				Name:        "id",
-				Description: "The identifier for this resource.",
-				Type:        proto.ColumnType_INT,
-				Transform:   transform.FromGo(),
-			},
 			{
 				Name:        "name",
 				Description: "The name for this resource.",
@@ -74,6 +67,13 @@ func tablePokemonPokemon(ctx context.Context) *plugin.Table {
 				Description: "A list of items this Pokémon may be holding when encountered.",
 				Type:        proto.ColumnType_JSON,
 				Hydrate:     getPokemon,
+			},
+			{
+				Name:        "id",
+				Description: "The identifier for this resource.",
+				Type:        proto.ColumnType_INT,
+				Hydrate:     getPokemon,
+				Transform:   transform.FromGo(),
 			},
 			{
 				Name:        "is_default",
@@ -184,16 +184,13 @@ func getPokemon(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	var name string
 
 	if h.Item != nil {
-		data := h.Item.(pokeapi.Result).Name
-		name = types.SafeString(data)
+		result := h.Item.(structs.Result)
+		name = result.Name
 	} else {
 		name = d.KeyColumnQuals["name"].GetStringValue()
 	}
 
-	logger.Warn("Item type", reflect.TypeOf(h.Item))
-	//name = d.KeyColumnQuals["name"].GetStringValue()
-
-	logger.Warn("Name", name)
+	logger.Debug("Name", name)
 
 	pokemon, err := pokeapi.Pokemon(name)
 
