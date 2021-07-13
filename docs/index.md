@@ -24,17 +24,35 @@ select
   weight
 from
   pokemon_pokemon
+order by
+  id
 ```
 
 ```text
-+-------+----------+---------------------------------------------------------------------+
-| score | comments | title                                                               |
-+-------+----------+---------------------------------------------------------------------+
-| 242   | 300      | Query Pokemon API with SQL                                      |
-| 121   | 127      | Why Uber Engineering Switched from Postgres to MySQL (2016)         |
-| 70    | 12       | Show HN: QueryCal – calculate metrics from your calendars using SQL |
-| 17    | 10       | Global Associative Arrays in PostgreSQL                             |
-+-------+----------+---------------------------------------------------------------------+
++------------+----+--------+--------+
+| title      | id | height | weight |
++------------+----+--------+--------+
+| bulbasaur  | 1  | 7      | 69     |
+| ivysaur    | 2  | 10     | 130    |
+| venusaur   | 3  | 20     | 1000   |
+| charmander | 4  | 6      | 85     |
+| charmeleon | 5  | 11     | 190    |
+| charizard  | 6  | 17     | 905    |
+| squirtle   | 7  | 5      | 90     |
+| wartortle  | 8  | 10     | 225    |
+| blastoise  | 9  | 16     | 855    |
+| caterpie   | 10 | 3      | 29     |
+| metapod    | 11 | 7      | 99     |
+| butterfree | 12 | 11     | 320    |
+| weedle     | 13 | 3      | 32     |
+| kakuna     | 14 | 6      | 100    |
+| beedrill   | 15 | 10     | 295    |
+| pidgey     | 16 | 3      | 18     |
+| pidgeotto  | 17 | 11     | 300    |
+| pidgeot    | 18 | 15     | 395    |
+| rattata    | 19 | 3      | 35     |
+| raticate   | 20 | 7      | 185    |
++------------+----+--------+--------+
 ```
 
 ## Documentation

@@ -20,7 +20,7 @@ steampipe plugin install pokemon
 Run a query:
 
 ```sql
-select arn, creation_date from pokemon_kms_key
+select name, id from pokemon_pokemon
 ```
 
 ## Developing
