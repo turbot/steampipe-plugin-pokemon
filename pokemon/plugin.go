@@ -12,6 +12,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		Name:             "steampipe-plugin-pokemon",
 		DefaultTransform: transform.FromCamel(),
 		TableMap: map[string]*plugin.Table{
+			"pokemon_berry": tablePokemonBerry(ctx),
 			"pokemon_pokemon": tablePokemonPokemon(ctx),
 		},
 	}
