@@ -17,7 +17,7 @@ select
   smoothness,
   soil_dryness
 from 
-  pokemon_berry
+  pokemon_berry;
 ```
 
 ### List all Berry where size more than 100 mm
@@ -30,7 +30,7 @@ select
 from
   pokemon_berry
 where
-  size > 100
+  size > 100;
 ```
 
 ### List all Berry where soil_dryness between 10 and 30
@@ -43,5 +43,5 @@ select
 from
   pokemon_berry
 where 
-  soil_dryness between 10 and 30
+  soil_dryness between 10 and 30;
 ```
