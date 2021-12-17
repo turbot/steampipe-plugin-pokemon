@@ -18,7 +18,7 @@ select
   stats,
   types
 from
-  pokemon_pokemon
+  pokemon_pokemon;
 ```
 
 ### List all Pokémon heavier than 200 hg (20 kg)
@@ -31,5 +31,5 @@ select
 from
   pokemon_pokemon
 where
-  weight >= 200
+  weight >= 200;
 ```
