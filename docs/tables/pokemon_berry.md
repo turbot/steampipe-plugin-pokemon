@@ -1,6 +1,6 @@
 # Table: pokemon_berry
 
-Berries (Japanese: きのみ Tree Fruit) are small, juicy, fleshy fruit. As in the real world, a large variety exists in the Pokémon world, with a large range of flavors, names, and effects. First found in the Generation II games, many Berries have since become critical held items in battle, where their various effects include HP and status condition restoration, stat enhancement, and even damage negation.
+Berries are small fruits that can provide HP and status condition restoration, stat enhancement, and even damage negation when eaten by Pokémon.
 
 ## Examples
 
@@ -20,7 +20,7 @@ from
   pokemon_berry;
 ```
 
-### List all Berry where size more than 100 mm
+### List all berries larger than 100 mm
 
 ```sql
 select
@@ -33,15 +33,15 @@ where
   size > 100;
 ```
 
-### List all Berry where soil_dryness between 10 and 30
+### List all berries with electric natural gift type
 
 ```sql
 select
   name,
   id,
-  soil_dryness
+  jsonb_pretty(natural_gift_type)
 from
   pokemon_berry
 where 
-  soil_dryness between 10 and 30;
+  natural_gift_type ->> 'name' = 'electric';
 ```
