@@ -39,7 +39,7 @@ where
 select
   name,
   id,
-  jsonb_pretty(natural_gift_type)
+  jsonb_pretty(natural_gift_type) as natural_gift_type
 from
   pokemon_berry
 where 
