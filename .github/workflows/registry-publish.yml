@@ -13,6 +13,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 env:
   PROJECT_ID: steampipe
   ORG: turbot
@@ -25,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
         with:
           fetch-depth: 0
 
@@ -40,7 +43,7 @@ jobs:
           test -f .goreleaser.yml
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
           go-version: 1.14
 
@@ -76,7 +79,7 @@ jobs:
           fi
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@b953231f81b8dfd023c58e0854a721e35037f28b # v2
         with:
           version: latest
           args: release --rm-dist --skip-publish
@@ -85,21 +88,21 @@ jobs:
         run: ls -laR ./dist
 
       - name: Save Linux Build Artifact - AMD64
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2 # v2
         with:
           name: steampipe-${{ env.PLUGIN_NAME }}_linux_amd64
           path: ./dist/steampipe-plugin-${{ env.PLUGIN_NAME }}_linux_amd64.gz
           if-no-files-found: error
 
       - name: Save Linux Build Artifact - ARM64
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2 # v2
         with:
           name: steampipe-${{ env.PLUGIN_NAME }}_linux_arm64
           path: ./dist/steampipe-plugin-${{ env.PLUGIN_NAME }}_linux_arm64.gz
           if-no-files-found: error
 
       - name: Save MacOS Build Artifact - AMD64
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2 # v2
         with:
           name: steampipe-${{ env.PLUGIN_NAME }}_darwin_amd64
           path: ./dist/steampipe-plugin-${{ env.PLUGIN_NAME }}_darwin_amd64.gz
@@ -142,7 +145,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
       - name: Set environment variables
         run: |
@@ -168,17 +171,17 @@ jobs:
       - run: oras version # oras is pre-installed on the image...
 
       - name: Download linux-amd64 artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281 # v2
         with:
           name: steampipe-${{ env.PLUGIN_NAME }}_linux_amd64
 
       - name: Download linux_arm64 artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281 # v2
         with:
           name: steampipe-${{ env.PLUGIN_NAME }}_linux_arm64
 
       - name: Download darwin_amd64 artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281 # v2
         with:
           name: steampipe-${{ env.PLUGIN_NAME }}_darwin_amd64
 
@@ -266,7 +269,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
       - name: Set environment variables
         run: |
